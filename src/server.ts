@@ -1,24 +1,25 @@
-import express from "express";
-import "express-async-errors";
-import morgan from "morgan";
-import {getAll, getOneById, create, updateById, deleteById} from './controllers/planets.js'
+const express = require('express');
+const bodyParser = require('body-parser');
+const passport = require('./passport');
+const userRouter = require('./user');
+const dotenv = require('dotenv');
+const db = require('./db');
+dotenv.config();
 
 const app = express();
-const port = 3000;
 
-app.use(morgan('dev'));
-app.use(express.json());
 
-app.get('/api/planets', getAll)
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+app.use(passport.initialize());
 
-app.get('/api/planets/:id', getOneById)
 
-app.post('/api/planets', create)
+app.use('/users', userRouter);
 
-app.put('/api/planets/:id', updateById)
 
-app.delete('/api/planets/:id', deleteById)
-
-app.listen(port, () => {
-  console.log(`Example app listening on port: http://localhost:${port}`);
-})
+const PORT = process.env.PORT || 5000;
+db.connect()
+  .then(() => {
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  })
+  .catch((err) => console.error(`Error connecting to database: ${err}`));
