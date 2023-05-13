@@ -1,7 +1,25 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const pool =const express = require('express');
+const router = express.Router();
 const pool = require('../db');
+const authorize = require('../middleware/authorize');
+
+
+router.get('/logout', authorize, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    await pool.query('UPDATE users SET token=NULL WHERE id=$1', [userId]);
+    res.status(200).json({ message: 'Logout effettuato con successo.' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ message: 'Errore durante il logout.' });
+  }
+});
+
+
+module.exports = router; require('../db');
 const passport = require('passport');
 const passportJWT = require('passport-jwt');
 const ExtractJwt = passportJWT.ExtractJwt;
@@ -67,7 +85,7 @@ router.post('/login', async (req, res, next) => {
     return res.status(401).json({ message: 'Authentication failed. User not found.' });
   }
 
-  // check if password matches
+  
   bcrypt.compare(password, user.rows[0].password, async (err, result) => {
     if (err) {
       return next(err);
